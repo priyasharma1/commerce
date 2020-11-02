@@ -1,0 +1,35 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+  <h5 class="heading">Listings</h5>
+  {% if listings %}
+    <div class="d-flex flex-wrap">
+      {% for listing in listings %}
+        <div class="card m-2" style="width: 20rem;">
+          <a href="{% url 'listing' listing.id %}" class="card-link">
+            {% if listing.url != None %}
+              <img src="{{ listing.url }}" class="card-img-top" alt="...">
+            {% else %}
+              <img src="{% static 'auctions/images/noimage.png' %}" class="card-img-top" alt="...">
+            {% endif %}
+
+            {% if listing.status == "False"%}
+            <span class="badge badge-warning">Closed</span>
+            {% endif %}
+          </a>
+          <div class="card-body">
+            <h5 class="card-title text-truncate">{{ listing.title }}</h5>
+            <p class="card-text">{{ listing.des }}</p>
+            <p class="card-text">Price : ${{ listing.bidStart }}</p>
+          </div>
+          <div class="card-footer text-muted">
+            <small>
+              Created - {{listing.created_date}}
+            </small>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "auctions/layout.html" %}
+{% block body %}
+  <h5 class="heading">Your Listing</h5>
+  <form action="{% url 'create' %}" method="post">
+    {% csrf_token %}
+    {% if listing is not None%}
+      <input type="hidden" name="id" value="{{listing.id}}">
+    {% endif %}
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Title</label>
+      <div class="col-sm-10">
+        <input autofocus class="form-control" type="text" name="title" placeholder="Add Title" required value="{{listing.title}}">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Description</label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="description" placeholder="Add Description" required value="{{listing.description}}">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Bid Start</label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="bidStart" placeholder="Add Bidding Start Rate" required value="{{listing.bidStart}}">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Image Url</label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="image" placeholder="Add Image Url" value="{{listing.url}}">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Category</label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" name="category" placeholder="Add Category" value="{{listing.category}}">
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">
+           {% if listing is not None%}
+           Save
+           {% else %}
+           Create
+           {% endif %}
+    </button>
+  </form>
+
+{% endblock %}

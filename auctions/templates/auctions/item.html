@@ -1,0 +1,135 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+{% if  listing %}
+<div class="container">
+  {% if listing.status == "False" and user == listing.currentBid.bidOwner %}
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">Well done!</h4>
+    <p>Congratulations, You have won this Auction!</p>
+    <hr>
+    <p class="mb-0">Please check your e-mail for further instructions.</p>
+  </div>
+  {% endif %}
+  <div class="row">
+    <div class="card border-light col-sm-12 col-lg-6">
+      <img class="card-img-top" src="{{listing.url}}" alt="...">
+    </div>
+    <div class="card border-default col">
+      <div class="card-body">
+        <h4 class="card-title font-weight-bold">
+          {{ listing.title }}
+        </h4>
+        <h6>Description:</h6>
+        <p class="card-text text-muted">{{ listing.description }}</p>
+        <p class="card-text">Price:
+          <small>
+          {% if listing.currentBid %}
+            <s class="danger">{{ listing.bidStart }}</s> {{listing.currentBid.bidValue}}
+          {% else %}
+            {{ listing.bidStart }}
+          {% endif %}
+          </small>
+        </p>
+        <p class="card-text">
+          {% if listing.status == "False" %}
+            <div class="alert alert-danger" role="alert">
+              This Auction is closed!
+            </div>
+          {% else %}
+            {% if user.is_authenticated %}
+              {% if listing.owner != request.user %}
+                <p>
+                  <a class="btn btn-outline-info" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    {% if listing.currentBid is None %}
+                      Make the first bid of this listing!
+                    {% else %}
+                      Bid this listing!
+                    {% endif %}
+                  </a>
+                  {% if message is not None%}
+
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                      This bit is invalid!
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% endif %}
+                </p>
+                <div class="collapse" id="collapseExample">
+                  <div class="card card-body">
+                    <form action="{% url 'listing' listing.id %}" method="post" class="form-inline">
+                      <div class="form-row w-100">
+                      <div class="col">
+                        <input type="text" class="form-control w-100" name="bidValue" placeholder="Bid Value"/>
+                      </div>
+                      <button type="submit" class="btn btn-sm btn-outline-secondary">Bid on it!</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              {% elif listing.status == "True" %}
+                <form action="{% url 'listing' listing.id %}" method="post">
+                  <input type="hidden" name="status" value="false">
+                  <button id="close" type="submit" class="btn btn-sm btn-danger">Close Auction</button>
+                </form>
+              {% endif %}
+            {% endif %}
+            <div class="pt-2">
+              {% if request.user in listing.watchers.all %}
+              <button id="watch" class="btn btn-sm btn-outline-secondary badge-secondary" data-id="{{listing.id}}" data-value="N">Watching</button>
+              {% else %}
+              <button id="watch" class="btn btn-sm btn-outline-secondary" data-id="{{listing.id}}" data-value="Y">Add to Watchlist</button>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% if user.username == "admin" %}
+          <div class="pt-2">
+            <a role="button" href="{% url 'delete' listing.id %}" class="btn btn-sm btn-outline-danger" data-id="{{listing.id}}" data-value="N">Delete</a>
+            <a role="button" href="{% url 'edit' listing.id %}" class="btn btn-sm btn-outline-danger" data-id="{{listing.id}}" data-value="N">Edit</a>
+            {% if listing.currentBid %}
+              <a role="button" href="{% url 'delete_bid' listing.id %}" class="btn btn-sm btn-outline-danger" data-id="{{listing.id}}" data-value="N">Delete Bid</a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      </div>
+      <div class="card-footer bg-transparent border-default">
+        <p class="card-text"><small class="text-muted">Created on {{ listing.created_date|date:"M, d" }} By {{listing.owner}} </small></p>
+        {% if listing.currentBid is not None %}
+          <p class="card-text"><small class="text-muted">Current Bid ${{ listing.currentBid.bidValue }} By {{listing.currentBid.bidOwner}} </small></p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card border-light col col-12 col-lg-12 col-md-12 col-sm-12">
+      <h4>Comments</h4>
+      {% if listing.status == "True" %}
+      <div class="form-group">
+        <form action="{% url 'listing' listing.id %}" method="post">
+          {% csrf_token %}
+          <textarea class="form-control" name="comment"></textarea>
+          <button type="submit" class="btn btn-outline-secondary">Post</button>
+        </form>
+      </div>
+      {% endif %}
+      {% for comment in listing.comments.all %}
+      <div class="card border-scondary">
+        <div class="card-header text-capitalize">{{ comment.commented_by|default:"Unknown Author" }} commented on {{ comment.date|date:"M, d"  }}</div>
+        <div class="card-body">
+          <div class="card-title font-italic"> {{ comment.description }}</div>
+          {% if user.username == "admin" %}
+            <button class="btn btn-sm btn-outline-danger removeComment" data-id="{{comment.id}}">Delete</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+<script src="{% static 'auctions/custom.js' %}"></script>
+{% endblock %}
+
